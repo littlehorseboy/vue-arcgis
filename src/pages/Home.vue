@@ -9,9 +9,14 @@
       </div>
 
       <div ref="panelDrag" class="panel panel-default" style="position: absolute; left: 200px; top: 200px; z-index: 999;">
-        <div ref="panelDragHead" class="panel-heading">地圖操作</div>
+        <div ref="panelDragHead" class="panel-heading">
+          地圖操作
+          <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          </div>
         <div class="panel-body">
-          <MapControl></MapControl>
+          <MapControl :map="map"></MapControl>
         </div>
       </div>
     </div>
@@ -121,8 +126,7 @@ export default {
           showLabels: true,
         });
 
-        // event bus
-        vm.$bus.$emit('map', map);
+        vm.map = map;
 
         // Proxy
         urlUtils.addProxyRule({
