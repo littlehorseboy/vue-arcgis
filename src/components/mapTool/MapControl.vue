@@ -1,31 +1,29 @@
 <template>
   <div>
-    <button class="btn btn-sm btn-default btn-block" @click="pan">
+    <button class="btn btn-sm btn-default btn-block" @click="mapControl('pan')">
       <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
       平移
     </button>
-    <button class="btn btn-sm btn-default btn-block" @click="zoomIn">
+    <button class="btn btn-sm btn-default btn-block" @click="mapControl('zoomIn')">
       <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
       框選放大
     </button>
-    <button class="btn btn-sm btn-default btn-block" @click="zoomOut">
+    <button class="btn btn-sm btn-default btn-block" @click="mapControl('zoomOut')">
       <span class="glyphicon glyphicon-zoom-out" aria-hidden="true"></span>
       框選縮小
     </button>
-    <button id="zoomfullextBtn" class="btn btn-sm btn-default btn-block">
+    <button class="btn btn-sm btn-default btn-block" @click="mapControl('full')">
       <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
       全圖
     </button>
-    <button id="zoomprevBtn" class="btn btn-sm btn-default btn-block">
+    <button class="btn btn-sm btn-default btn-block" @click="mapControl('prev')">
       <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
       上一步
     </button>
-      <button id="zoomnextBtn" class="btn btn-sm btn-default btn-block">
+      <button class="btn btn-sm btn-default btn-block" @click="mapControl('next')">
       <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
       下一步
     </button>
-    <!--<button id="deactivateBtn" class="btn btn-sm btn-default btn-block">工具取消</button>-->
-
   </div>
 </template>
 
@@ -34,42 +32,50 @@ import { loadModules } from 'esri-loader';
 
 export default {
   name: 'MapControl',
-  props: {
-    map: {
-      type: Object,
-    },
-  },
   data() {
     return {
-
+      map: null,
     };
   },
-  mounted() {
+  created() {
     const vm = this;
-
-    loadModules([
-      "esri/toolbars/navigation",
-    ])
-      .then(([
-        Navigation
-      ]) => {
-        vm.navToolbar = new Navigation(vm.map);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    this.$bus.$on('map', (event) => {
+      vm.map = event;
+    });
   },
   methods: {
-    pan() {
-      this.navToolbar.zoomToNextExtent();
+    mapControl(type) {
+      const vm = this;
+
+      loadModules([
+        'esri/toolbars/navigation',
+      ])
+        .then(([
+          Navigation,
+        ]) => {
+          const navToolbar = new Navigation(vm.map);
+
+          switch (type) {
+            case 'pan':
+              navToolbar.activate(Navigation.PAN);
+              break;
+            case 'zoomIn':
+              navToolbar.activate(Navigation.ZOOM_IN);
+              break;
+            case 'zoomOut':
+              navToolbar.activate(Navigation.ZOOM_OUT);
+              break;
+            default:
+              break;
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     },
-    zoomIn() {
-      debugger;
-      this.navToolbar.activate(Navigation.ZOOM_IN);
-    },
-    zoomOut() {
-      this.navToolbar.activate(Navigation.ZOOM_OUT);
-    },
+  },
+  beforeDestroy() {
+    this.$bus.$off('map');
   },
 };
 </script>

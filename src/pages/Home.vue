@@ -2,13 +2,14 @@
   <div>
     <div ref="map" class="map">
       <div ref="button"></div>
+      <button style="position: absolute; left: 50px; top: 50px; z-index: 999;" @click="slidePaneVisible = !slidePaneVisible">aaa</button>
       <div id="CoordinatesDiv" class="CoordinatesDesign">
         <div class="pull-left">{{ CoordinatesDivWGS84 }}</div>
         <div class="pull-left">{{ CoordinatesDivTWD97 }}</div>
         <div class="pull-left">{{ CoordinatesDivScale }}</div>
       </div>
 
-      <div ref="panelDrag" class="panel panel-default" style="position: absolute; left: 200px; top: 200px; z-index: 999;">
+      <div ref="panelDrag" class="panel panel-default" style="position: absolute; left: 200px; top: 200px; z-index: 999;" v-show="slidePaneVisible">
         <div ref="panelDragHead" class="panel-heading">
           地圖操作
           <button type="button" class="close" aria-label="Close">
@@ -16,7 +17,8 @@
           </button>
           </div>
         <div class="panel-body">
-          <MapControl :map="map"></MapControl>
+          <MapControl v-if="'MapControl' === panelShowWho"></MapControl>
+          <Measurement v-if="'Measurement' === panelShowWho"></Measurement>
         </div>
       </div>
     </div>
@@ -26,13 +28,19 @@
 <script>
 import { loadModules } from 'esri-loader';
 import MapControl from '../components/mapTool/MapControl';
+import Measurement from '../components/mapTool/Measurement';
+
+import { ArcGISServiceUrl, proxyUrl, polygonSendUrl } from '../assets/js/setUrl';
+import { TransCoordTWD97ToWGS84 } from '../assets/js/mapTool';
 import Drag from '../../static/lib/dom-drag/dom-drag';
+
 
 export default {
   name: 'Home',
   data() {
     return {
       slidePaneVisible: false,
+      panelShowWho: 'Measurement',
       CoordinatesDivWGS84: '', // WGS84 座標文字
       CoordinatesDivTWD97: '', // TWD97 座標文字
       CoordinatesDivScale: '', // Scale 座標文字
@@ -40,62 +48,10 @@ export default {
   },
   components: {
     MapControl,
+    Measurement,
   },
   mounted() {
     const vm = this;
-    const ArcGISServiceUrl = '59.125.203.147';
-    const proxyUrl = '192.168.15.134';
-
-    // TWD97轉經緯度
-    function twd97_to_latlng(_x, _y) {
-      const pow = Math.pow, M_PI = Math.PI;
-      const sin = Math.sin, cos = Math.cos, tan = Math.tan;
-      const _a = 6378137.0, _b = 6356752.314245;
-      const _lng0 = 121 * M_PI / 180, _k0 = 0.9999, _dx = 250000, _dy = 0;
-      const _e = pow((1 - pow(_b, 2) / pow(_a, 2)), 0.5);
-
-      _x -= _dx;
-      _y -= _dy;
-
-      const _M = _y / _k0;
-
-      const _mu = _M / (_a * (1.0 - pow(_e, 2) / 4.0 - 3 * pow(_e, 4) / 64.0 - 5 * pow(_e, 6) / 256.0));
-      const _e1 = (1.0 - pow((1.0 - pow(_e, 2)), 0.5)) / (1.0 + pow((1.0 - pow(_e, 2)), 0.5));
-
-      const _J1 = (3 * _e1 / 2 - 27 * pow(_e1, 3) / 32.0);
-      const _J2 = (21 * pow(_e1, 2) / 16 - 55 * pow(_e1, 4) / 32.0);
-      const _J3 = (151 * pow(_e1, 3) / 96.0);
-      const _J4 = (1097 * pow(_e1, 4) / 512.0);
-
-      const _fp = _mu + _J1 * sin(2 * _mu) + _J2 * sin(4 * _mu) + _J3 * sin(6 * _mu) + _J4 * sin(8 * _mu);
-
-      const _e2 = pow((_e * _a / _b), 2);
-      const _C1 = pow(_e2 * cos(_fp), 2);
-      const _T1 = pow(tan(_fp), 2);
-      const _R1 = _a * (1 - pow(_e, 2)) / pow((1 - pow(_e, 2) * pow(sin(_fp), 2)), (3.0 / 2.0));
-      const _N1 = _a / pow((1 - pow(_e, 2) * pow(sin(_fp), 2)), 0.5);
-
-      const _D = _x / (_N1 * _k0);
-
-      const _Q1 = _N1 * tan(_fp) / _R1;
-      const _Q2 = (pow(_D, 2) / 2.0);
-      const _Q3 = (5 + 3 * _T1 + 10 * _C1 - 4 * pow(_C1, 2) - 9 * _e2) * pow(_D, 4) / 24.0;
-      const _Q4 = (61 + 90 * _T1 + 298 * _C1 + 45 * pow(_T1, 2) - 3 * pow(_C1, 2) - 252 * _e2) * pow(_D, 6) / 720.0;
-      let _lat = _fp - (_Q1 * (_Q2 - _Q3 + _Q4));
-
-      const _Q5 = _D;
-      const _Q6 = (1 + 2 * _T1 + _C1) * pow(_D, 3) / 6;
-      const _Q7 = (5 - 2 * _C1 + 28 * _T1 - 3 * pow(_C1, 2) + 8 * _e2 + 24 * pow(_T1, 2)) * pow(_D, 5) / 120.0;
-      let _lng = _lng0 + ((_Q5 - _Q6 + _Q7) / cos(_fp));
-
-      _lat = (_lat * 180) / M_PI;
-      _lng = (_lng * 180) / M_PI;
-
-      return {
-        lat: _lat,
-        lng: _lng,
-      };
-    }
 
     loadModules([
       'esri/map', 'esri/urlUtils',
@@ -126,7 +82,7 @@ export default {
           showLabels: true,
         });
 
-        vm.map = map;
+        this.$bus.$emit('map', map);
 
         // Proxy
         urlUtils.addProxyRule({
@@ -308,16 +264,16 @@ export default {
 
           vm.CoordinatesDivTWD97 = `TWD97： ${mp.x.toFixed(1)}, ${mp.y.toFixed(1)}`;
 
-          const w84 = twd97_to_latlng(mp.x, mp.y);
+          const w84 = TransCoordTWD97ToWGS84(mp.x, mp.y);
 
-          const minuteX = Math.floor((w84.lng - Math.floor(w84.lng)) * 60);
-          const secondX = (Math.floor(((w84.lng - Math.floor(w84.lng)) * 60)
-            - Math.floor((w84.lng - Math.floor(w84.lng)) * 60)) * 60 * 10) / 10;
-          const minuteY = Math.floor((w84.lat - Math.floor(w84.lat)) * 60);
-          const secondY = (Math.floor(((w84.lat - Math.floor(w84.lat)) * 60)
-            - Math.floor((w84.lat - Math.floor(w84.lat)) * 60)) * 60 * 10) / 10;
+          const minuteX = Math.floor((w84.Lon - Math.floor(w84.Lon)) * 60);
+          const secondX = (Math.floor(((w84.Lon - Math.floor(w84.Lon)) * 60)
+            - Math.floor((w84.Lon - Math.floor(w84.Lon)) * 60)) * 60 * 10) / 10;
+          const minuteY = Math.floor((w84.Lat - Math.floor(w84.Lat)) * 60);
+          const secondY = (Math.floor(((w84.Lat - Math.floor(w84.Lat)) * 60)
+            - Math.floor((w84.Lat - Math.floor(w84.Lat)) * 60)) * 60 * 10) / 10;
 
-          vm.CoordinatesDivWGS84 = `DMS：${Math.floor(w84.lng)}°${minuteX}'${secondX}" ,${Math.floor(w84.lat)}°${minuteY}'${secondY}"`;
+          vm.CoordinatesDivWGS84 = `DMS：${Math.floor(w84.Lon)}°${minuteX}'${secondX}" ,${Math.floor(w84.Lat)}°${minuteY}'${secondY}"`;
 
           vm.CoordinatesDivScale = `比例尺： 1:${map.getScale().toFixed(0)}`;
         };
@@ -327,16 +283,17 @@ export default {
         // end CoordinatesText
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
       });
 
-      Drag.init(vm.$refs.panelDragHead, vm.$refs.panelDrag);
+    Drag.init(vm.$refs.panelDragHead, vm.$refs.panelDrag);
   },
 };
 </script>
 
 <style scoped>
   @import url('https://js.arcgis.com/3.23/esri/css/esri.css');
+  @import url('https://js.arcgis.com/3.23/esri/themes/calcite/dijit/calcite.css');
 
   .map {
     width: 100vw;
@@ -352,7 +309,10 @@ export default {
     /*background: linear-gradient(270deg, rgb(112, 112, 112), rgb(255, 255, 255));*/
     /*background: -webkit-linear-gradient(270deg, rgb(112, 112, 112), rgb(255, 255, 255));*/
     /*border: 1px solid #a1a1a1;*/
-    text-shadow: 0 1px 0 #000, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,.1), 0 0 5px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.3), 0 3px 5px rgba(0,0,0,.2), 0 5px 10px rgba(0,0,0,.25), 0 10px 10px rgba(0,0,0,.2), 0 20px 20px rgba(0,0,0,.15);
+    text-shadow: 0 1px 0 #000, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9,
+      0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,.1), 0 0 5px rgba(0,0,0,.1),
+      0 1px 3px rgba(0,0,0,.3), 0 3px 5px rgba(0,0,0,.2), 0 5px 10px rgba(0,0,0,.25),
+      0 10px 10px rgba(0,0,0,.2), 0 20px 20px rgba(0,0,0,.15);
     font-size: 13px;
     text-align: left;
     position: absolute;
