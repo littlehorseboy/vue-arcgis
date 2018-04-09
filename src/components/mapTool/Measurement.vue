@@ -1,6 +1,8 @@
 <template>
-  <div id="measurementDiv">
+  <div>
+    <div id="measurementDiv">
 
+    </div>
   </div>
 </template>
 
@@ -77,7 +79,29 @@ export default {
 };
 </script>
 
-<!-- Add 'scoped' attribute to limit CSS to this component only -->
-<style scoped>
+<style>
+  #measurementDiv {
+    width: 250px;
+  }
 
+  #measurementDiv span.dijit.dijitReset.dijitInline.esriToggleButton > span {
+    width: auto;
+    padding-left: 1rem;
+  }
+
+  .calcite .dijitContentPane {
+    padding: 0;
+  }
+
+  .calcite .dijitButtonContents {
+    padding: 0;
+  }
+
+  .calcite .dijitButtonNode .dijitIcon {
+    margin-right: 0;
+  }
+
+  .dijitReset.dijitMenuItemLabel {
+    margin-left: 1rem;
+  }
 </style>

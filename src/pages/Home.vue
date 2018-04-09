@@ -1,24 +1,46 @@
 <template>
   <div>
     <div ref="map" class="map">
-      <div ref="button"></div>
-      <button style="position: absolute; left: 50px; top: 50px; z-index: 999;" @click="slidePaneVisible = !slidePaneVisible">aaa</button>
+      <div class="toolbar">
+        <div ref="button"></div>
+        <div class="btn btn-sm" @click="slidePaneVisible = true; panelShowWho = 'MapControl';"
+          :title="panelDragHead.MapControl">
+          <vue-material-icon name="pan_tool" :size="20"></vue-material-icon>
+        </div>
+        <div class="btn btn-sm" @click="slidePaneVisible = true; panelShowWho = 'Measurement';"
+          :title="panelDragHead.Measurement">
+          <vue-material-icon name="straighten" :size="20"></vue-material-icon>
+        </div>
+        <div class="btn btn-sm" @click="slidePaneVisible = true; panelShowWho = 'LayerControl';"
+          :title="panelDragHead.LayerControl">
+          <vue-material-icon name="layers" :size="20"></vue-material-icon>
+        </div>
+        <div class="btn btn-sm" @click="slidePaneVisible = true; panelShowWho = 'SearchControl';"
+          :title="panelDragHead.SearchControl">
+          <vue-material-icon name="search" :size="20"></vue-material-icon>
+        </div>
+      </div>
+
       <div id="CoordinatesDiv" class="CoordinatesDesign">
         <div class="pull-left">{{ CoordinatesDivWGS84 }}</div>
         <div class="pull-left">{{ CoordinatesDivTWD97 }}</div>
         <div class="pull-left">{{ CoordinatesDivScale }}</div>
       </div>
 
-      <div ref="panelDrag" class="panel panel-default" style="position: absolute; left: 200px; top: 200px; z-index: 999;" v-show="slidePaneVisible">
+      <div ref="panelDrag" class="panel panel-default"
+        style="position: absolute; left: 200px; top: 200px; z-index: 999;"
+        v-show="slidePaneVisible">
         <div ref="panelDragHead" class="panel-heading">
-          地圖操作
-          <button type="button" class="close" aria-label="Close">
+          {{ panelDragHead[panelShowWho] }}
+          <button type="button" class="close" aria-label="Close" @click="slidePaneVisible = false">
             <span aria-hidden="true">&times;</span>
           </button>
-          </div>
-        <div class="panel-body">
-          <MapControl v-if="'MapControl' === panelShowWho"></MapControl>
-          <Measurement v-if="'Measurement' === panelShowWho"></Measurement>
+        </div>
+        <div class="panel-body calcite">
+          <MapControl v-show="'MapControl' === panelShowWho"></MapControl>
+          <Measurement v-show="'Measurement' === panelShowWho"></Measurement>
+          <LayerControl v-show="'LayerControl' === panelShowWho" :baseLayer="baseLayer"></LayerControl>
+          <SearchControl v-show="'SearchControl' === panelShowWho"></SearchControl>
         </div>
       </div>
     </div>
@@ -27,8 +49,11 @@
 
 <script>
 import { loadModules } from 'esri-loader';
+
 import MapControl from '../components/mapTool/MapControl';
 import Measurement from '../components/mapTool/Measurement';
+import LayerControl from '../components/mapTool/LayerControl';
+import SearchControl from '../components/mapTool/SearchControl';
 
 import { ArcGISServiceUrl, proxyUrl, polygonSendUrl } from '../assets/js/setUrl';
 import { TransCoordTWD97ToWGS84 } from '../assets/js/mapTool';
@@ -40,15 +65,24 @@ export default {
   data() {
     return {
       slidePaneVisible: false,
-      panelShowWho: 'Measurement',
+      panelShowWho: '',
+      panelDragHead: { // 手動標題切換, 配合 Drag 事件
+        MapControl: '地圖操作',
+        Measurement: '測量工具',
+        LayerControl: '圖層控制',
+        SearchControl: '屬性查詢',
+      },
       CoordinatesDivWGS84: '', // WGS84 座標文字
       CoordinatesDivTWD97: '', // TWD97 座標文字
       CoordinatesDivScale: '', // Scale 座標文字
+      baseLayer: null,
     };
   },
   components: {
     MapControl,
     Measurement,
+    LayerControl,
+    SearchControl,
   },
   mounted() {
     const vm = this;
@@ -219,6 +253,8 @@ export default {
             map.getLayer(baseLayer[l].layerSetting.id)
               .setVisibility(baseLayer[l].layerSetting.visible);
             map.reorderLayer(map.getLayer(baseLayer[l].layerSetting.id), 0);
+
+            vm.baseLayer = baseLayer;
           }
         });
 
@@ -245,11 +281,6 @@ export default {
         const homeButton = new HomeButton({
           map,
         }, this.$refs.button);
-
-        homeButton.domNode.style.position = 'absolute';
-        homeButton.domNode.style.top = '90px';
-        homeButton.domNode.style.left = '21px';
-        homeButton.domNode.style.zIndex = 50;
 
         homeButton.startup();
         // end HomeButton
@@ -304,24 +335,55 @@ export default {
     margin-right: 1rem;
   }
 
-  /*座標字樣*/
-.CoordinatesDesign {
-    /*background: linear-gradient(270deg, rgb(112, 112, 112), rgb(255, 255, 255));*/
-    /*background: -webkit-linear-gradient(270deg, rgb(112, 112, 112), rgb(255, 255, 255));*/
-    /*border: 1px solid #a1a1a1;*/
-    text-shadow: 0 1px 0 #000, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9,
-      0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,.1), 0 0 5px rgba(0,0,0,.1),
-      0 1px 3px rgba(0,0,0,.3), 0 3px 5px rgba(0,0,0,.2), 0 5px 10px rgba(0,0,0,.25),
-      0 10px 10px rgba(0,0,0,.2), 0 20px 20px rgba(0,0,0,.15);
-    font-size: 13px;
-    text-align: left;
+  .toolbar {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    z-index: 30
-}
+    top: 90px;
+    left: 21px;
+    z-index: 50;
+    display: block;
+  }
 
-.CoordinatesDesign .floatLeft {
-    margin-right: .7rem;
-}
+  .toolbar > div.btn {
+    width: 30px;
+    height: 30px;
+    background-color: #666;
+    background-color: rgba(102,102,102,0.80);
+    border-radius: 5px;
+    color: white;
+    font-size: 15px;
+    padding: 4px 4px;
+    display: block;
+    margin-top: 0.5rem;
+  }
+
+  .toolbar > div.btn:active {
+    background-color: #79939d;
+    border: 1px solid #71b3f7;
+  }
+
+  .toolbar > div.btn:hover {
+    background-color: #333;
+    background-color: rgba(102,102,102,0.90);
+  }
+
+  /*座標字樣*/
+  .CoordinatesDesign {
+      /*background: linear-gradient(270deg, rgb(112, 112, 112), rgb(255, 255, 255));*/
+      /*background: -webkit-linear-gradient(270deg, rgb(112, 112, 112), rgb(255, 255, 255));*/
+      /*border: 1px solid #a1a1a1;*/
+      text-shadow: 0 1px 0 #000, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9,
+        0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,.1), 0 0 5px rgba(0,0,0,.1),
+        0 1px 3px rgba(0,0,0,.3), 0 3px 5px rgba(0,0,0,.2), 0 5px 10px rgba(0,0,0,.25),
+        0 10px 10px rgba(0,0,0,.2), 0 20px 20px rgba(0,0,0,.15);
+      font-size: 13px;
+      text-align: left;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      z-index: 30
+  }
+
+  .CoordinatesDesign .floatLeft {
+      margin-right: .7rem;
+  }
 </style>

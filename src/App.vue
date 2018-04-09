@@ -15,5 +15,7 @@ export default {
 </script>
 
 <style>
-
+  .tooltip-inner {
+    white-space: nowrap;
+  }
 </style>

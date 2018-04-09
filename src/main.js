@@ -2,6 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue';
 import { loadScript } from 'esri-loader';
+import VueMaterialIcon from 'vue-material-icon';
 import App from './App';
 import router from './router';
 import eventBus from './setup/eventBus';
@@ -12,6 +13,8 @@ const options = {
 };
 
 loadScript(options);
+
+Vue.component(VueMaterialIcon.name, VueMaterialIcon);
 
 Vue.config.productionTip = false;
 

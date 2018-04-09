@@ -1,7 +1,7 @@
 <template>
   <div>
     <button class="btn btn-sm btn-default btn-block" @click="mapControl('pan')">
-      <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+      <vue-material-icon name="pan_tool" :size="12"></vue-material-icon>
       平移
     </button>
     <button class="btn btn-sm btn-default btn-block" @click="mapControl('zoomIn')">
@@ -13,15 +13,15 @@
       框選縮小
     </button>
     <button class="btn btn-sm btn-default btn-block" @click="mapControl('full')">
-      <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+      <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
       全圖
     </button>
     <button class="btn btn-sm btn-default btn-block" @click="mapControl('prev')">
-      <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+      <vue-material-icon name="undo" :size="14"></vue-material-icon>
       上一步
     </button>
       <button class="btn btn-sm btn-default btn-block" @click="mapControl('next')">
-      <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+      <vue-material-icon name="redo" :size="14"></vue-material-icon>
       下一步
     </button>
   </div>
