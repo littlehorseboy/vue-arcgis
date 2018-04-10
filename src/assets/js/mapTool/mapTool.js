@@ -1,4 +1,9 @@
 import proj4 from 'proj4';
+// import Wkt from '../../../../node_modules/wicket/wicket';
+import 'wicket/wicket-arcgis';
+
+const wkt = new Wkt.Wkt();
+
 
 // proj4 定義 TWD97 的轉換標準
 proj4.defs([
@@ -40,4 +45,32 @@ export const formatDegree = (val) => {
   const v2 = Math.floor((value - v1) * 60); // 分
   const v3 = Math.round((value - v1) * 3600 % 60); // 秒
   return `${v1}°${v2}'${v3}"`;
+};
+
+// WKT轉ArcGISJS obj
+export const WKTtoArcGISOBJ = (wktString) => {
+  try { // Catch any malformed WKT strings
+    wkt.read(wktString);
+  } catch (e1) {
+    try {
+      debugger;
+      wkt.read(e1.value.replace('\n', '').replace('\r', '').replace('\t', ''));
+    } catch (e2) {
+      if (e2.name === 'WKTError') {
+        alert('Wicket could not understand the WKT string you entered. Check that you have parentheses balanced, and try removing tabs and newline characters.');
+        return false;
+      }
+    }
+  }
+
+  const config = {
+    spatialReference: {
+      // wkid: 4326 // WGS84 unprojected
+      wkid: 3826,
+      // latestWkid: 3826
+    },
+  };
+
+  const obj = wkt.toObject(config); // Make an object
+  return obj;
 };

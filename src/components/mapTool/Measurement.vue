@@ -9,7 +9,7 @@
 <script>
 import { loadModules } from 'esri-loader';
 import { ArcGISServiceUrl } from '../../assets/js/setUrl';
-import { TransCoord } from '../../assets/js/mapTool';
+import { TransCoord } from '../../assets/js/mapTool/mapTool';
 
 export default {
   name: 'Measurement',
