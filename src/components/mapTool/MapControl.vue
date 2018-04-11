@@ -35,43 +35,56 @@ export default {
   data() {
     return {
       map: null,
+      navToolbar: null,
     };
+  },
+  props: {
+    extent: {
+      type: Object,
+    },
   },
   created() {
     const vm = this;
     this.$bus.$on('map', (event) => {
       vm.map = event;
-    });
-  },
-  methods: {
-    mapControl(type) {
-      const vm = this;
-
       loadModules([
         'esri/toolbars/navigation',
       ])
         .then(([
           Navigation,
         ]) => {
-          const navToolbar = new Navigation(vm.map);
-
-          switch (type) {
-            case 'pan':
-              navToolbar.activate(Navigation.PAN);
-              break;
-            case 'zoomIn':
-              navToolbar.activate(Navigation.ZOOM_IN);
-              break;
-            case 'zoomOut':
-              navToolbar.activate(Navigation.ZOOM_OUT);
-              break;
-            default:
-              break;
-          }
+          vm.navToolbar = new Navigation(vm.map);
         })
         .catch((err) => {
           console.error(err);
         });
+    });
+  },
+  methods: {
+    mapControl(type) {
+      const vm = this;
+      switch (type) {
+        case 'pan':
+          vm.navToolbar.activate(Navigation.PAN);
+          break;
+        case 'zoomIn':
+          vm.navToolbar.activate(Navigation.ZOOM_IN);
+          break;
+        case 'zoomOut':
+          vm.navToolbar.activate(Navigation.ZOOM_OUT);
+          break;
+        case 'full':
+          vm.map.setExtent(vm.extent, true);
+          break;
+        case 'prev':
+          vm.navToolbar.zoomToPrevExtent();
+          break;
+        case 'next':
+          vm.navToolbar.zoomToNextExtent();
+          break;
+        default:
+          break;
+      }
     },
   },
   beforeDestroy() {

@@ -96,6 +96,8 @@ module.exports = {
       $: 'jquery',
       jquery: 'jquery',
       Wkt: 'wicket/wicket.js',
+      // Promise: 'promise-polyfill',
+      Promise: 'es6-promise',
     }),
   ],
 }

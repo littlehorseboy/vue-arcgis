@@ -8,6 +8,10 @@
 <script>
 import '../node_modules/bootstrap-sass/assets/stylesheets/_bootstrap.scss';
 import '../node_modules/bootstrap-sass/assets/javascripts/bootstrap';
+import Promise from 'es6-promise';
+if (!window.Promise) {
+  window['Promise'] = Promise;
+}
 
 export default {
   name: 'App',

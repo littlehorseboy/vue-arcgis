@@ -37,7 +37,7 @@
           </button>
         </div>
         <div class="panel-body calcite">
-          <MapControl v-show="'MapControl' === panelShowWho"></MapControl>
+          <MapControl v-show="'MapControl' === panelShowWho" :extent="extent"></MapControl>
           <Measurement v-show="'Measurement' === panelShowWho"></Measurement>
           <LayerControl v-show="'LayerControl' === panelShowWho" :baseLayer="baseLayer"></LayerControl>
           <SearchControl v-show="'SearchControl' === panelShowWho"></SearchControl>
@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { loadModules } from 'esri-loader';
+import { loadScript, loadModules } from 'esri-loader';
 
 import MapControl from '../components/mapTool/MapControl';
 import Measurement from '../components/mapTool/Measurement';
@@ -59,6 +59,13 @@ import { ArcGISServiceUrl, proxyUrl, polygonSendUrl } from '../assets/js/setUrl'
 import { TransCoordTWD97ToWGS84 } from '../assets/js/mapTool/mapTool';
 import Drag from '../../static/lib/dom-drag/dom-drag';
 
+
+// preload the ArcGIS API
+const options = {
+  url: 'https://js.arcgis.com/3.23',
+};
+
+loadScript(options);
 
 export default {
   name: 'Home',
@@ -76,6 +83,7 @@ export default {
       CoordinatesDivTWD97: '', // TWD97 座標文字
       CoordinatesDivScale: '', // Scale 座標文字
       baseLayer: null,
+      extent: null,
     };
   },
   components: {
@@ -106,6 +114,8 @@ export default {
           ymax: 2643005.705,
           spatialReference: { wkid: 3826 },
         });
+
+        vm.extent = extent;
 
         const map = new Map(this.$refs.map, {
           // basemap: 'gray',
