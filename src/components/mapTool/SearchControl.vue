@@ -108,7 +108,39 @@
 
       <!-- 座標查詢 -->
       <div role="tabpanel" class="tab-pane" id="Coordinate">
+        <div class="panel panel-default">
+          <div class="panel-heading">TWD97</div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label>TWD97 X</label>
+              <input v-model="TWD97XTxt" class="form-control" placeholder="X">
+            </div>
 
+            <div class="form-group">
+              <label>TWD97 Y</label>
+              <input v-model="TWD97YTxt" class="form-control" placeholder="Y">
+            </div>
+
+            <button class="btn btn-default" @click="TWD97Search">查詢</button>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">Lat/Lon</div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label>Lat</label>
+              <input v-model="LatTxt" class="form-control" placeholder="Lat">
+            </div>
+
+            <div class="form-group">
+              <label>Lon</label>
+              <input v-model="LonTxt" class="form-control" placeholder="Lon">
+            </div>
+
+            <button class="btn btn-default" @click="LatLonSearch">查詢</button>
+          </div>
+        </div>
       </div>
       <!-- end 座標查詢 -->
     </div>
@@ -118,8 +150,9 @@
 
 <script>
 import { loadModules } from 'esri-loader';
-import { WKTtoArcGISOBJ } from '../../assets/js/mapTool/mapTool';
+import { TransCoord, WKTtoArcGISOBJ } from '../../assets/js/mapTool/mapTool';
 
+let loadPointXYToCenter;
 let loadWKTtoExtent;
 let loadWKTtoDraw;
 let applySymbolToGraphic;
@@ -154,6 +187,12 @@ export default {
       HNalleyOptions: [],
       HN: 'NULL',
       HNOptions: [],
+      // TWD97
+      TWD97XTxt: '308407.630',
+      TWD97YTxt: '2770908.023',
+      // Lat/Lon
+      LatTxt: '23.2',
+      LonTxt: '120.25',
     };
   },
   props: {
@@ -169,7 +208,7 @@ export default {
   mounted() {
     const vm = this;
 
-    // [ loadWKTtoExtent, loadWKTtoDraw ] function build
+    // [ loadPointXYToCenter, loadWKTtoExtent, loadWKTtoDraw ] function build
     loadModules([
       'esri/graphic',
       'esri/Color',
@@ -188,12 +227,17 @@ export default {
         SimpleFillSymbol,
         Point,
       ]) => {
+        // 讀取 Point X Y
+        loadPointXYToCenter = (obj) => {
+          vm.map.centerAt(new Point(obj.x, obj.y, obj.spatialReference));
+        };
+
         // 讀取 WKT 字串後 setExtent
         loadWKTtoExtent = (wktString) => {
           const obj = WKTtoArcGISOBJ(wktString); // Make an object
 
           if (obj.type === 'point') {
-            vm.map.centerAndZoom(new Point(obj.x, obj.y, 3826));
+            vm.map.centerAt(new Point(obj.x, obj.y, 3826));
             vm.map.setScale(1000);
           } else {
             const ext = obj.getExtent();
@@ -284,7 +328,7 @@ export default {
       .catch((err) => {
         console.error(err);
       });
-    // end [ loadWKTtoExtent, loadWKTtoDraw ] function build
+    // end [ loadPointXYToCenter, loadWKTtoExtent, loadWKTtoDraw ] function build
 
     // road select option add
     const httpRequest = new XMLHttpRequest();
@@ -597,6 +641,32 @@ export default {
 
       httpRequest.open('GET', `http://webapplication120170215025150.azurewebsites.net/XinyiQueryHouseNo.ashx${param}`);
       httpRequest.send();
+    },
+    TWD97Search() {
+      loadPointXYToCenter({
+        x: this.TWD97XTxt,
+        y: this.TWD97YTxt,
+        spatialReference: 3826,
+      });
+      applySymbolToGraphic({
+        x: this.TWD97XTxt,
+        y: this.TWD97YTxt,
+        spatialReference: 3826,
+      });
+    },
+    LatLonSearch() {
+      const TWD97xy = TransCoord(this.LonTxt, this.LatTxt);
+
+      loadPointXYToCenter({
+        x: TWD97xy.x,
+        y: TWD97xy.y,
+        spatialReference: 3826,
+      });
+      applySymbolToGraphic({
+        x: TWD97xy.x,
+        y: TWD97xy.y,
+        spatialReference: 3826,
+      });
     },
   },
   beforeDestroy() {

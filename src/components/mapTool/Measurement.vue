@@ -53,10 +53,12 @@ export default {
           MeasurementTableHeader2.textContent = 'Y座標';
           measurement.mouseLatitude = '';
           measurement.mouseLongitude = '';
-          measurement.on('measure-end', (meevt) => {
-            const point = TransCoord(meevt.geometry.x, meevt.geometry.y);
-            document.querySelector('span[dojoattachpoint="markerLatitude"]').textContent = point.x.toFixed(3);
-            document.querySelector('span[dojoattachpoint="markerLongitude"]').textContent = point.y.toFixed(3);
+          measurement.on('measure-end', (evt) => {
+            if (evt.geometry.type === 'point') {
+              const point = TransCoord(evt.geometry.x, evt.geometry.y);
+              document.querySelector('span[dojoattachpoint="markerLatitude"]').textContent = point.x.toFixed(3);
+              document.querySelector('span[dojoattachpoint="markerLongitude"]').textContent = point.y.toFixed(3);
+            }
             // this.setTool(evt.activeTool, false);
             // console.log(measurement.getTool());
           });
@@ -99,9 +101,5 @@ export default {
 
   .calcite .dijitButtonNode .dijitIcon {
     margin-right: 0;
-  }
-
-  .dijitReset.dijitMenuItemLabel {
-    margin-left: 1rem;
   }
 </style>

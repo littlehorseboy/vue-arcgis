@@ -5,19 +5,19 @@
         <div ref="button"></div>
         <div class="btn btn-sm" @click="slidePaneVisible = true; panelShowWho = 'MapControl';"
           :title="panelDragHead.MapControl">
-          <vue-material-icon name="pan_tool" :size="20"></vue-material-icon>
+          <vue-material-icon name="pan_tool" :size="vueMaterialIconSize"></vue-material-icon>
         </div>
         <div class="btn btn-sm" @click="slidePaneVisible = true; panelShowWho = 'Measurement';"
           :title="panelDragHead.Measurement">
-          <vue-material-icon name="straighten" :size="20"></vue-material-icon>
+          <vue-material-icon name="straighten" :size="vueMaterialIconSize"></vue-material-icon>
         </div>
         <div class="btn btn-sm" @click="slidePaneVisible = true; panelShowWho = 'LayerControl';"
           :title="panelDragHead.LayerControl">
-          <vue-material-icon name="layers" :size="20"></vue-material-icon>
+          <vue-material-icon name="layers" :size="vueMaterialIconSize"></vue-material-icon>
         </div>
         <div class="btn btn-sm" @click="slidePaneVisible = true; panelShowWho = 'SearchControl';"
           :title="panelDragHead.SearchControl">
-          <vue-material-icon name="search" :size="20"></vue-material-icon>
+          <vue-material-icon name="search" :size="vueMaterialIconSize"></vue-material-icon>
         </div>
       </div>
 
@@ -36,7 +36,7 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="panel-body calcite">
+        <div class="panel-body">
           <MapControl v-show="'MapControl' === panelShowWho" :extent="extent"></MapControl>
           <Measurement v-show="'Measurement' === panelShowWho"></Measurement>
           <LayerControl v-show="'LayerControl' === panelShowWho" :baseLayer="baseLayer"></LayerControl>
@@ -71,6 +71,7 @@ export default {
   name: 'Home',
   data() {
     return {
+      vueMaterialIconSize: 20,
       slidePaneVisible: false,
       panelShowWho: '',
       panelDragHead: { // 手動標題切換, 配合 Drag 事件
@@ -341,10 +342,6 @@ export default {
     height: 100vh;
   }
 
-  .pull-left {
-    margin-right: 1rem;
-  }
-
   .toolbar {
     position: absolute;
     top: 90px;
@@ -374,6 +371,10 @@ export default {
   .toolbar > div.btn:hover {
     background-color: #333;
     background-color: rgba(102,102,102,0.90);
+  }
+
+  .pull-left {
+    margin-right: 1rem;
   }
 
   /*座標字樣*/
