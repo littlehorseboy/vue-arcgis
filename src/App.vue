@@ -6,11 +6,12 @@
 </template>
 
 <script>
+import Promise from 'es6-promise';
 import '../node_modules/bootstrap-sass/assets/stylesheets/_bootstrap.scss';
 import '../node_modules/bootstrap-sass/assets/javascripts/bootstrap';
-import Promise from 'es6-promise';
+
 if (!window.Promise) {
-  window['Promise'] = Promise;
+  window.Promise = Promise;
 }
 
 export default {

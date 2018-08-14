@@ -1,30 +1,20 @@
 # vue-arcgis
 
-> A Vue.js project
+嘗試用 webpack ES6 來玩 ArcGISJavaScript
 
-## Build Setup
+- vue-cli
+- event bus
+- bootstrap-sass 3.3.7
+- esri-loader
+- wicket
+- proj4
+- jQuery
+- webpack.ProvidePlugin
 
-``` bash
-# install dependencies
-npm install
+地圖操作
 
-# serve with hot reload at localhost:8080
-npm run dev
+測量工具
 
-# build for production with minification
-npm run build
+圖層控制 (簡陋)
 
-# build for production and view the bundle analyzer report
-npm run build --report
-
-# run unit tests
-npm run unit
-
-# run e2e tests
-npm run e2e
-
-# run all tests
-npm test
-```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+屬性查詢 (道路, 門牌, 座標)

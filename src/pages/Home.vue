@@ -55,7 +55,7 @@ import Measurement from '../components/mapTool/Measurement';
 import LayerControl from '../components/mapTool/LayerControl';
 import SearchControl from '../components/mapTool/SearchControl';
 
-import { ArcGISServiceUrl, proxyUrl, polygonSendUrl } from '../assets/js/setUrl';
+import { ArcGISServiceUrl, proxyUrl } from '../assets/js/setUrl';
 import { TransCoordTWD97ToWGS84 } from '../assets/js/mapTool/mapTool';
 import Drag from '../../static/lib/dom-drag/dom-drag';
 
